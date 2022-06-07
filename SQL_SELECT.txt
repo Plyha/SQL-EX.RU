@@ -136,6 +136,70 @@ SELECT DISTINCT p.maker
 FROM product p
 JOIN laptop l ON l.model=p.model AND l.speed>=750
 
+--List the models of any type having the highest price of all products present in the database.
+SELECT model
+FROM(
+	SELECT model, price
+ 	FROM pc
+ 	UNION
+ 	SELECT model, price
+ 	FROM laptop
+ 	UNION
+ 	SELECT model, price
+ 	FROM printer
+) AS model
+WHERE price = (
+ SELECT MAX(price)
+ FROM(
+  SELECT price
+  FROM pc
+  UNION
+  SELECT price
+  FROM laptop
+  UNION
+  SELECT price
+  FROM printer
+ ) AS max_price
+)
+
+--Find the printer makers also producing PCs with the lowest RAM capacity and the highest processor speed of all PCs having the lowest RAM capacity.
+--Result set: maker.
+SELECT DISTINCT maker
+FROM product
+WHERE model IN (
+	SELECT model
+	FROM PC
+	WHERE ram= (
+		SELECT MIN(ram)
+		FROM pc)
+	AND speed=(
+		SELECT MAX(speed)
+		FROM pc
+		WHERE ram =(
+		SELECT MIN(ram)
+		FROM pc)
+	)
+)
+AND maker IN (
+	SELECT maker
+	FROM product
+	WHERE type='Printer')
+
+--Find out the average price of PCs and laptops produced by maker A.
+--Result set: one overall average price for all items.
+SELECT avg(price_from_pc_and_laptop.price) AS AVG_Price
+FROM (
+	SELECT pc.price
+	FROM pc
+	    JOIN product p
+	    ON p.model=pc.model
+	WHERE p.maker='A'
+	UNION ALL
+	SELECT l.price
+	FROM laptop l
+	    JOIN product p
+	    ON p.model=l.model
+	WHERE p.maker='A') AS price_from_pc_and_laptop
 
 
 
