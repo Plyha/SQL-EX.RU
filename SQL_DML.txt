@@ -1,0 +1,84 @@
+# SQL
+
+--Add following model into the PC table:
+--code: 20
+--model: 2111
+--speed: 950
+--ram: 512
+--hd: 60
+--cd: 52x
+--price: 1100
+INSERT INTO PC (code,model,speed,ram,hd,cd,price)
+VALUES (20,2111,950,512,60,'52x',1100)
+
+--Add to the Product table following products from maker Z:
+--printer model 4003, PC model 4001 and laptop model 4002
+INSERT INTO product (maker,model,type) VALUES
+('Z',4003,'Printer'),
+('Z',4001,'PC'),
+('Z',4002,'Laptop')
+
+--Add the model 4444 with code=22, speed=1200 and price=1350 into the PC table.
+--The absent features should be supplied with the default values for corresponding columns.
+INSERT INTO PC (code,model,speed,price)
+VALUES (22,4444,1200,1350)
+
+--For each group of laptops with the identical model number, add following record into PC table:
+--code: minimal code among laptops in the group +20;
+--model: laptop's model number +1000;
+--speed: maximal speed among laptops in the group;
+--ram: maximal ram size among laptops in the group *2
+--hd: maximal hd capacity among laptops in the group *2;
+--cd: default value;
+--price: maximal price among laptops in the group divided by 1.5.
+--Remark. Consider model number as numeric.
+INSERT INTO PC (code,model,speed,ram,hd,price)
+SELECT MIN( code )+20,
+   model +1000,
+   MAX( speed ),
+   MAX( ram )*2,
+   MAX( hd )*2,
+   MAX( price )/1.5
+FROM laptop
+GROUP BY model
+
+--Delete from PC table the computers having minimal hdd size or minimal ram size.
+DELETE FROM pc
+WHERE
+    pc.hd=(SELECT MIN(hd) FROM pc) or
+    pc.ram=(select MIN(ram) from pc);
+
+--Delete from the Laptop table all the laptops of those makers who don't produce printers.
+DELETE FROM laptop
+WHERE model NOT IN(
+    SELECT model FROM product
+    WHERE maker IN(
+        SELECT maker
+        FROM product
+        WHERE type='Printer'
+    )
+)
+
+--Maker A has passed manufacture of printers to maker Z. Perform necessary changes.
+UPDATE product
+SET maker='Z'
+WHERE maker='A' and type='Printer'
+
+--Delete from Ships table all the ships sunk in battles.
+DELETE FROM ships
+WHERE name IN(
+    SELECT ship FROM outcomes
+    WHERE result='sunk'
+)
+
+--Modify data in Classes table so that gun calibers are measured in centimeters (1 inch = 2.5cm), and the displacement - in metric tons (1 metric ton = 1.1 tons).
+--Calculate displacement to within integer.
+UPDATE Classes
+SET bore=bore*2.5,displacement=ROUND(displacement/1.1,0)
+
+
+
+
+
+
+
